@@ -49,12 +49,18 @@ func (t Transport) RoundTrip(r *http.Request) (*http.Response, error) {
 
 	// Merge cookies
 	cookies := t.cookies.Cookies(r.URL)
-	curCookies := r.Header.Get("Cookie")
 	cookiesStrings := make([]string, 0)
 	for _, cookie := range cookies {
 		cookiesStrings = append(cookiesStrings, cookie.String())
 	}
-	cookieString := curCookies + strings.Join(cookiesStrings, "; ")
+
+	// Prefix the seperator
+	curCookies := r.Header.Get("Cookie")
+	if len(curCookies) > 0 {
+		curCookies = "; " + curCookies
+	}
+
+	cookieString := strings.Join(cookiesStrings, "; ") + curCookies
 	r.Header.Set("Cookie", cookieString)
 
 	resp, err := t.upstream.RoundTrip(r)
